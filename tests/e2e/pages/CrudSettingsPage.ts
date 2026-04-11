@@ -93,4 +93,20 @@ export class CrudSettingsPage {
   async waitForViewMode() {
     await expect(this.page.getByRole('button', { name: /salva/i })).not.toBeVisible();
   }
+
+  // Permission-related checks
+  async isCreateButtonVisible(): Promise<boolean> {
+    const createButton = this.page.getByRole('button', {
+      name: /nuovo|create|add/i,
+    });
+    return await createButton.isVisible();
+  }
+
+  async isDeleteButtonVisible(): Promise<boolean> {
+    // Check if any delete button is visible in the table
+    const deleteButtons = this.page.getByRole('button', {
+      name: /elimina|delete/i,
+    });
+    return await deleteButtons.count() > 0;
+  }
 }
