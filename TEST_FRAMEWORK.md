@@ -196,10 +196,17 @@ await page.getByPlaceholder('Inserisci il nome').fill('Mario');
 
 ## Run Tests
 
-### Run tutti i test
+### Run su Ambiente Remoto (staging, production)
 
 ```bash
+# Staging (default)
 npm run test:e2e
+
+# Production
+npm run test:e2e:prod
+
+# Local (localhost:4000)
+npm run test:e2e:local
 ```
 
 ### Run con UI (headless=false)
@@ -266,6 +273,22 @@ npx playwright show-trace test-results/[test-name]/trace.zip
 
 ## Configurazione
 
+### Ambienti Remoti
+
+Il framework supporta test su ambienti multipli (local, staging, production):
+
+```typescript
+const ENV = process.env.TEST_ENV || 'staging';
+
+const BASE_URLS: Record<string, string> = {
+  local: 'http://localhost:4000',
+  staging: 'https://staging.cucu.app',
+  production: 'https://cucu.app',
+};
+
+const baseURL = BASE_URLS[ENV] || BASE_URLS.staging;
+```
+
 ### playwright.config.ts
 
 ```typescript
@@ -275,7 +298,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   timeout: 30000,
-  baseURL: 'http://localhost:4000',
+  baseURL,  // Configurato dinamicamente dall'ambiente
   use: {
     headless: true,
     trace: 'retain-on-failure',
@@ -310,6 +333,72 @@ export default defineConfig({
 ```
 
 ---
+
+## Remote Testing
+
+### Prerequisiti
+
+Per eseguire test su ambienti remoti (staging/production):
+
+1. **Cucu Frontend** deve essere deployato e accessibile all'URL configurato
+2. **Test users** devono esistere nel database dell'ambiente remoto:
+   - `admin@cucu.local` — Con permessi admin
+   - `limited@cucu.local` — Con permessi limitati
+   - `noperms@cucu.local` — Senza permessi
+3. **Login** funzionale sull'ambiente remoto
+4. **Permissions system** funzionante sull'ambiente remoto
+
+### Run Tests su Ambiente Remoto
+
+```bash
+# Staging (default)
+npm run test:e2e
+
+# Production
+npm run test:e2e:prod
+
+# Local
+npm run test:e2e:local
+```
+
+### Configurare Nuovi Ambienti
+
+Per aggiungere un nuovo ambiente (es: `development`):
+
+1. Aggiorna `playwright.config.ts`:
+
+```typescript
+const BASE_URLS: Record<string, string> = {
+  local: 'http://localhost:4000',
+  staging: 'https://staging.cucu.app',
+  production: 'https://cucu.app',
+  development: 'https://dev.cucu.app',  // Nuovo ambiente
+};
+```
+
+2. Aggiungi script in `package.json`:
+
+```json
+{
+  "scripts": {
+    "test:e2e:dev": "TEST_ENV=development playwright test"
+  }
+}
+```
+
+3. Run:
+
+```bash
+npm run test:e2e:dev
+```
+
+### Best Practices per Remote Testing
+
+1. **Non testare su production per test quotidiani** — Usa staging
+2. **Test data cleanup** — Assicurati che i test users esistano e siano puliti
+3. **Test isolation** — Ogni test deve essere indipendente
+4. **Environment variables** — Usa variabili d'ambiente per URLs e credentials
+5. **Rate limiting** — Non eseguire troppi test in parallelo su remote (rispetto API limits)
 
 ## Prossimi Passi
 
