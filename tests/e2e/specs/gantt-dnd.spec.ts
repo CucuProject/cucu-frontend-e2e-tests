@@ -82,7 +82,7 @@ async function dragIntoAutoscroll(page: Page, taskId: string) {
   return during;
 }
 
-test.describe('Gantt milestone drag and resize', () => {
+test.describe('Gantt milestone drag and resize (design-system smoke)', () => {
   test('treats sub-dead-zone movement as click and keeps the bar in place', async ({ page }) => {
     await gotoGantt(page);
 
